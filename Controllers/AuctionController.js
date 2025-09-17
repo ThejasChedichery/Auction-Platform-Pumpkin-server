@@ -61,7 +61,7 @@ const PlaceBid = (req, res) => {
           return res.status(404).json({ success: false, message: "Item not found" });
         }
 
-        if (item.is_locked) {
+        if (item.is_locked==1) {
           db.run("ROLLBACK");
           return res.status(423).json({ success: false, message: "Item is locked, try again later" });
         }
