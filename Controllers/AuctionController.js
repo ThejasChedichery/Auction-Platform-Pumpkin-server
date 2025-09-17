@@ -54,7 +54,7 @@ const PlaceBid = (req, res) => {
     db.serialize(() => {
       db.run("BEGIN TRANSACTION");
   
-      // 1. Get the current item
+      // Get the current item
       db.get("SELECT * FROM auction WHERE id = ?", [itemId], (err, item) => {
         if (err || !item) {
           db.run("ROLLBACK");
@@ -68,14 +68,14 @@ const PlaceBid = (req, res) => {
 
         const newBid = item.current_bid + 1;
   
-        // 2. Lock the item immediately
+        // Lock the item immediately
         db.run("UPDATE auction SET is_locked = 1 WHERE id = ?", [itemId], (err2) => {
           if (err2) {
             db.run("ROLLBACK");
             return res.status(500).json({ success: false, message: "Error locking item" });
           }
   
-          // 3. Insert bid
+          // Insert bid
           db.run(
             "INSERT INTO bids_items (item_id, user_id, bid_amount) VALUES (?, ?, ?)",
             [itemId, userId, newBid],
@@ -85,7 +85,7 @@ const PlaceBid = (req, res) => {
                 return res.status(500).json({ success: false, message: "Error placing bid" });
               }
   
-              // 4. Update auction
+              // Update auction
               db.run(
                 "UPDATE auction SET current_bid = ?, last_bidder_id = ?, last_bid_time = CURRENT_TIMESTAMP WHERE id = ?",
                 [newBid, userId, itemId],
@@ -95,7 +95,7 @@ const PlaceBid = (req, res) => {
                     return res.status(500).json({ success: false, message: "Error updating auction" });
                   }
   
-                  // 5. Commit changes
+                  // Commit changes
                   db.run("COMMIT");
   
                   // Unlock after 3s
